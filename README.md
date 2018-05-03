@@ -1,4 +1,4 @@
-# DiscordPubgStatsSprayer
+# Discord PUBG Stats Sprayer
 
 ## Setup
 `cp .env.dist .env` and add your own tokens.
