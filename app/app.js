@@ -10,8 +10,8 @@ const pubg = new Pubgapi(
     process.env.DISCORD_BOT_TOKEN,
     { defaultShard: process.env.DEFAULT_SHARD }
 );
+const prefix = process.env.BOT_PREFIX
 
-console.log(process.env);
 async function killsLastMatch(message) {
     let playerId = "account.596da277f2a94906a890aed74a6b1472" // Arazu
     // let playerId = "account.2ce70d019a6841018d685962f8a397b9" // Ryangr0
