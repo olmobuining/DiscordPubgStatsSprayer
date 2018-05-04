@@ -109,8 +109,10 @@ client.on('ready', () => {
             });
         });
     }
+    // When the bot starts, directly check for new matches instead of waiting the default time.
     findNewMatches();
-    var checkinterval = setInterval(findNewMatches, 300000);
+    let intervalTime = (process.env.DEFAULT_INTERVAL_CHECK_TIME_MIN * 60000);
+    let checkinterval = setInterval(findNewMatches, intervalTime);
 });
 
 
