@@ -12,7 +12,7 @@ class RemovePlayers {
         this.name = `RemovePlayers`;
     }
     execute(client, message, args, options) {
-        Player.schema.remove().exec();
+        Player.remove().exec();
         message.reply("Removed all players from the database.");
     }
 }

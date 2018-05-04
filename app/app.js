@@ -39,7 +39,7 @@ client.on('message', message => {
     
     // Run command
     if (cmd) {
-        console.log(`Run command: ${cmd.name} with arguments: ${args}`);
+        console.log(`Run command: ${cmd.name}, with arguments: ${args}`);
         cmd.execute(client, message, args, {});
     }
 });

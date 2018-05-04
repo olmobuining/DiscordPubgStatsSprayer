@@ -34,3 +34,4 @@ This is a bot for your Discord server. The idea for this bot is: For example, yo
 - [ ] Check for new matches and report to a channel
 - [ ] Production docker(-compose) files
 - [ ] Deploy to a server
+- [ ] When the bot posts the results, and there is a chicken dinner. post a random chicken dinner picture? or some kind of chicken dinner GIF.

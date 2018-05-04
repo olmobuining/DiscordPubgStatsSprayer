@@ -25,9 +25,22 @@ let playerSchema = new Schema({
         default: Date.now
     },
 });
-let Player = mongoose.model('Player', playerSchema);
 
-async function findPlayerInDatabase(discordId, discordUsername) {
+playerSchema.methods.checkUsername = function () {
+    if (typeof this.pubg === 'undefined' || !this.pubg.username) {
+        return false;
+    }
+    return true;
+};
+
+playerSchema.methods.checkId = function () {
+    if (typeof this.pubg === 'undefined' || !this.pubg.id) {
+        return false;
+    }
+    return true;
+};
+
+playerSchema.methods.findPlayerInDatabase = async function(discordId, discordUsername) {
     let findId = Player.where({ id: discordId });
     return findId.findOne().exec().then((result) => {
         if (!result) {
@@ -40,11 +53,8 @@ async function findPlayerInDatabase(discordId, discordUsername) {
         }
         return result;
     });
-}
-
-module.exports = {
-    schema: Player,
-    methods: {
-        findPlayerInDatabase: findPlayerInDatabase
-    },
 };
+
+let Player = mongoose.model('Player', playerSchema);
+
+module.exports = Player;

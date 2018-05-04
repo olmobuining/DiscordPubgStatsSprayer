@@ -12,18 +12,21 @@ class MyPubgUsername {
             `un`,
         ];
         this.name = `MyPubgUsername`;
+        this.errorMessages = {
+            noUsername: `I'm sorry, I don't know your PUBG username yet.\nPlease tell me your username by typing: \`${prefix}${this.name} yourPUBGusernameHERE\``
+        };
     }
     execute(client, message, args, options) {
         if (args.length === 0) {
-            Player.methods.findPlayerInDatabase(message.author.id, message.author.username).then(result => {
+            new Player().findPlayerInDatabase(message.author.id, message.author.username).then(result => {
                 if (typeof result.pubg === 'undefined' || !result.pubg.username) {
-                    message.reply(`I'm sorry, I don't know your PUBG username yet.\nPlease tell me your username by typing: \`${prefix}${this.name} yourPUBGusernameHERE\``);
+                    message.reply(this.errorMessages.noUsername);
                 } else {
                     message.reply(`According to me, your PUBG username is: ${result.pubg.username}`);
                 }
             });
         } else if (args.length === 1) {
-            Player.methods.findPlayerInDatabase(message.author.id, message.author.username).then(result => {
+            new Player().findPlayerInDatabase(message.author.id, message.author.username).then(result => {
                 if (!result) {
                     console.log("NO RESULT???", result);
                 } else {
