@@ -3,6 +3,13 @@
 const Discord = require('discord.js');
 const client = new Discord.Client();
 const fs = require('fs');
+const Player = require('./schema/Player.js');
+const Session = require('./schema/Session.js');
+const Pubgapi = require('pubg-api');
+const pubg = new Pubgapi(
+    process.env.PUBG_API_TOKEN,
+    { defaultShard: process.env.DEFAULT_SHARD }
+);
 
 const prefix = process.env.BOT_PREFIX;
 
@@ -43,6 +50,70 @@ client.on('message', message => {
         cmd.execute(client, message, args, {});
     }
 });
+
+client.on('ready', () => {
+    function findNewMatches() {
+        Session.find().exec().then(sessions => {
+            sessions.forEach(session => {
+                let endTimestamp = session.startedAt.valueOf() + (60000*session.duration);
+                let now = new Date;
+                if (now.valueOf() > endTimestamp) {
+                    session.remove();
+                }
+                LastMatchCheck(session, client);
+            });
+            console.log(sessions);
+        });
+    }
+
+    function createLastMatchOverview(matchId, playerId, client, channelId) {
+        console.log("loading match");
+        pubg.loadMatchById(matchId).then(matchData => {
+            for (let item of matchData.raw.included) {
+                if (item.type === "participant" && item.attributes.stats.playerId === playerId) {
+                    let damage = Math.round(item.attributes.stats.damageDealt, 2);
+                    let rich = new Discord.RichEmbed()
+                        .setTitle(`Here's an overview of your last match.`)
+                        .addField(`Place`, item.attributes.stats.winPlace, true)
+                        .addField(`Kills`, item.attributes.stats.kills, true)
+                        .addField('Damage', damage, true)
+                        .addField(`DBNOs`, item.attributes.stats.DBNOs, true)
+                        .addField(`Assists`, item.attributes.stats.assists, true)
+                        .addField(`Furthest Kill`, item.attributes.stats.longestKill + `m`, true)
+                        // .setAuthor(playerMessage.author.username, playerMessage.author.displayAvatarURL)
+                        .setTimestamp(matchData.raw.data.attributes.createdAt);
+
+                    console.log(`sending rich:`, rich);
+                    client.channels.get(channelId).send({embed:rich});
+                }
+            }
+        });
+    }
+    function LastMatchCheck(session, client) {
+        console.log(`checking session for playerId: ${session.playerId}`);
+        new Player().findPlayerInDatabase(session.playerId).then(player => {
+            pubg.loadPlayerById(player.pubg.id).then((playerData, err) => {
+                if (!playerData || err) {
+                    console.log(playerData, err);
+                    return;
+                }
+                let matchId = playerData.data.relationships.matches.data[0].id;
+                if (!session.lastMatch || session.lastMatch !== matchId) {
+                    console.log(`New Match found for: ${session.playerId}`);
+                    session.lastMatch = matchId;
+                    session.save();
+                    createLastMatchOverview(matchId, player.pubg.id, client, session.channelId);
+                }
+            }).catch(err => {
+                console.log("LastMatchCheck failed : ", err);
+            });
+        });
+    }
+    findNewMatches();
+    var checkinterval = setInterval(findNewMatches, 300000);
+});
+
+
 
 function getCommand(command) {
     if (client.commands.has(command)) {

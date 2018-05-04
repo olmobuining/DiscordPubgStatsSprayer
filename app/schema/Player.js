@@ -20,7 +20,7 @@ let playerSchema = new Schema({
             required: false,
         },
     },
-    created_at: {
+    createdAt: {
         type: Date,
         default: Date.now
     },
@@ -49,7 +49,7 @@ playerSchema.methods.findPlayerInDatabase = async function(discordId, discordUse
                 username: discordUsername,
             }).then(resultingPlayer => {
                 return resultingPlayer;
-            })
+            });
         }
         return result;
     });

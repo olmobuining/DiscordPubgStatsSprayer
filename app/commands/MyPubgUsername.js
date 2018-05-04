@@ -19,7 +19,7 @@ class MyPubgUsername {
     execute(client, message, args, options) {
         if (args.length === 0) {
             new Player().findPlayerInDatabase(message.author.id, message.author.username).then(result => {
-                if (typeof result.pubg === 'undefined' || !result.pubg.username) {
+                if (!result.checkUsername()) {
                     message.reply(this.errorMessages.noUsername);
                 } else {
                     message.reply(`According to me, your PUBG username is: ${result.pubg.username}`);
