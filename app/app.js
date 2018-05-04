@@ -1,104 +1,55 @@
 'use strict';
-
-const Player = require('./schema/Player.js');
 // Discord
 const Discord = require('discord.js');
 const client = new Discord.Client();
+const fs = require('fs');
 
-// PUBG
-const Pubgapi = require('pubg-api');
-const pubg = new Pubgapi(
-    process.env.PUBG_API_TOKEN,
-    { defaultShard: process.env.DEFAULT_SHARD }
-);
-const prefix = process.env.BOT_PREFIX
+const prefix = process.env.BOT_PREFIX;
 
-async function killsLastMatch(playerId, message) {
-    // let playerId = "account.596da277f2a94906a890aed74a6b1472" // Arazu
-    // let playerId = "account.2ce70d019a6841018d685962f8a397b9" // Ryangr0
-
-    pubg.loadPlayerById(playerId).then(playerData => {
-        let matchId = playerData.data.relationships.matches.data[0].id;
-        pubg.loadMatchById(matchId).then(matchData => {
-            for (let item of matchData.raw.included) {
-                if (item.type === "participant" && item.attributes.stats.playerId === playerId) {
-                    let damage = Math.round(item.attributes.stats.damageDealt, 2);
-                    message.reply(`In your last match you had ${ item.attributes.stats.kills } kills and dealt ${ damage } damage.`);
-                }
-            }
-        });
-    }, err => {
-        message.reply("Unable to get stats, please check the log")
-    });
-    
-}
-
-function findPlayerIdByName(username) {
-    return pubg.searchPlayers({playerNames:username})
-    .then(result => {
-        return result;
-    }, err => {
+client.commands = new Discord.Collection();
+client.aliases = new Discord.Collection();
+fs.readdir(`./commands/`, (err, files) => {
+    if (err) {
         console.error(err);
+    }
+    console.info(`Found ${files.length} commands.`);
+    files.forEach(f => {
+        let theCommand = require(`./commands/${f}`);
+        console.info(`Loading Command: ${theCommand.name}.`);
+        client.commands.set(theCommand.name, theCommand);
+        theCommand.aliases.forEach(alias => {
+            client.aliases.set(alias, theCommand.name);
+        });
     });
-}
-
-function findPlayerInDatabase(discordId, discordUsername) {
-    let findId = Player.where({ id: discordId });
-    let resultPlayer = null;
-    return findId.findOne().exec().then((result) => {
-        if (!result) {
-            var player = Player({
-                id: discordId,
-                username: discordUsername,
-            });
-            player.save(function (err) {
-                if (err){
-                    console.log('FAILED', err);
-                }
-                console.log('Saved new Player', player);
-            });
-        }
-        return result;
-    });
-}
-
-
+});
 
 client.on('message', message => {
     // Ignore other bots 
     if (message.author.bot) return;
 
-    if (message.content === 'b') {
-        findPlayerInDatabase(message.author.id, message.author.username)
-        .then(dbPlayer => {
-            if (typeof dbPlayer.pubgAccountId === "undefined") {
-                findPlayerIdByName(dbPlayer.username)
-                    .then(playerData => {
-                        console.log("Player ID PUBG:", playerData.data[0].id);
-                        dbPlayer.pubgAccountId = playerData.data[0].id;
-                        dbPlayer.save(function (err) {
-                            if (err){
-                                console.log('FAILED', err);
-                            }
-                            console.log('Saved new Player', player);
-                        });
-                    });
-            }
-            killsLastMatch(dbPlayer.pubgAccountId, message);
-        });
+    // Ignore requests without our prefix
+    if (!message.content.startsWith(prefix)) {
+        return;
     }
-    if (message.content === 'getplayers') {
-        Player.find().exec().then(result => {
-            console.log(result);
-        });
-        message.reply('Check the console.');
-    }
+    let command = message.content.split(' ')[0].slice(prefix.length);
+    let args = message.content.split(' ').slice(1);
 
-    if (message.content === 'removeplayers') {
-        Player.remove().exec();
-        message.reply("emptied database");
+    // Get command
+    let cmd = getCommand(command);
+    
+    // Run command
+    if (cmd) {
+        console.log(`Run command: ${cmd.name} with arguments: ${args}`);
+        cmd.execute(client, message, args, {});
     }
-
 });
+
+function getCommand(command) {
+    if (client.commands.has(command)) {
+        return client.commands.get(command);
+    } else if (client.aliases.has(command)) {
+        return client.commands.get(client.aliases.get(command));
+    }
+}
 
 client.login(process.env.DISCORD_BOT_TOKEN);
