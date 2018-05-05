@@ -8,7 +8,7 @@ This is a bot for your Discord server. The idea for this bot is: For example, yo
 
 ### Feature progress:
 - [x] Start play session.
-- [ ] Stop play session (also automatically after 4-6 hours?) (with end details like total damage and kills this session).
+- [x] Stop play session (also automatically after 4-6 hours?) (with end details like total damage and kills this session).
 - [x] Show last match of player (in case the session didn't start yet).
 - [ ] Add players to the current play session (or maybe ask that when starting to track, but we need this command to add players if they come later into the session).
 - [ ] Remove player from the current play session.
@@ -18,23 +18,23 @@ This is a bot for your Discord server. The idea for this bot is: For example, yo
 - [x] Dynamically load commands
 - [x] Use the bot prefix
 - [x] Saving data of a user
-- [ ] Make commands dependent on certain data/commands
 - [x] Maybe a better way of adding methods to the Schema(s)
+- [x] Start session command
+- [x] Stop session command
+- [x] last match stats in rich format
+- [x] Check for new matches and report to a channel
+- [x] Deploy to a server (for now Heroku)
+- [ ] Make commands dependent on certain data/commands
 - [ ] Rich format of the stats (rolling to do)
 - [ ] Multi-language support
 - [ ] Add a proper logger
 - [ ] Able to set a output channel for all match results
 - [ ] ping command
 - [ ] help command
-- [x] Start session command
-- [ ] Stop session command
 - [ ] Add players to session command
 - [ ] Remove players from session command
-- [x] last match stats in rich format
-- [ ] Check for new matches and report to a channel
-- [ ] Production docker(-compose) files
-- [ ] Deploy to a server
-- [ ] When the bot posts the results, and there is a chicken dinner. post a random chicken dinner picture? or some kind of chicken dinner GIF.
+- [ ] Production docker(-compose) files (maybe not needed with Heroku running?)
+- [ ] When the bot posts the results, and there is a chicken dinner. post a random chicken dinner picture or some kind of chicken dinner GIF.
 - [ ] Cleaner way to do the interval check, now everything is in the app.js file, which is not clean.
 - [ ] Interval check save matches done.
 - [ ] Interval looks up the last match played, if after starting time: add, otherwise don't do anything.
