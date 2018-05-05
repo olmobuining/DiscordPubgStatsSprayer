@@ -130,4 +130,5 @@ client.login(process.env.DISCORD_BOT_TOKEN);
 // Just for heroku
 const express = require('express');
 const app = express();
+app.get('/', (req, res) => res.send('Discord PUBG Stats Sprayer!'));
 app.listen(process.env.PORT || 8080);
