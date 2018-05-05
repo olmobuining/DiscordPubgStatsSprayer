@@ -17,7 +17,7 @@ let playerSchema = new Schema({
     },
     displayAvatarURL: {
         type: String,
-        required: true,
+        required: false,
     },
     pubg: {
         id: {
