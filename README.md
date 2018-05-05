@@ -39,3 +39,4 @@ This is a bot for your Discord server. The idea for this bot is: For example, yo
 - [ ] Interval check save matches done.
 - [ ] Interval looks up the last match played, if after starting time: add, otherwise don't do anything.
 - [ ] Command to change certain server default values (e.g. default session duration and default shard)
+- [ ] Command to check how much time is left in the current play session, and the possibility to add more.

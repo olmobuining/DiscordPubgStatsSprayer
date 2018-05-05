@@ -80,7 +80,7 @@ client.on('ready', () => {
                         .addField(`DBNOs`, item.attributes.stats.DBNOs, true)
                         .addField(`Assists`, item.attributes.stats.assists, true)
                         .addField(`Furthest Kill`, item.attributes.stats.longestKill + `m`, true)
-                        // .setAuthor(playerMessage.author.username, playerMessage.author.displayAvatarURL)
+                        .setAuthor(player.username, player.displayAvatarURL)
                         .setTimestamp(matchData.raw.data.attributes.createdAt);
 
                     console.log(`sending rich:`, rich);
@@ -91,7 +91,7 @@ client.on('ready', () => {
     }
     function LastMatchCheck(session, client) {
         console.log(`checking session for playerId: ${session.playerId}`);
-        new Player().findPlayerInDatabase(session.playerId).then(player => {
+        new Player().findPlayer(session.playerId).then(player => {
             pubg.loadPlayerById(player.pubg.id).then((playerData, err) => {
                 if (!playerData || err) {
                     console.log(playerData, err);

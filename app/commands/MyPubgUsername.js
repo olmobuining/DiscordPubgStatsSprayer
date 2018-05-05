@@ -1,6 +1,6 @@
 'use strict';
-const Player = require('../schema/Player.js');
 const prefix = process.env.BOT_PREFIX;
+const Player = require('../schema/Player.js');
 
 // Adding and getting the PUBG username
 class MyPubgUsername {
@@ -18,7 +18,7 @@ class MyPubgUsername {
     }
     execute(client, message, args, options) {
         if (args.length === 0) {
-            new Player().findPlayerInDatabase(message.author.id, message.author.username).then(result => {
+            new Player().findPlayer(message.author.id, message.author.username).then(result => {
                 if (!result.checkUsername()) {
                     message.reply(this.errorMessages.noUsername);
                 } else {
@@ -26,10 +26,11 @@ class MyPubgUsername {
                 }
             });
         } else if (args.length === 1) {
-            new Player().findPlayerInDatabase(message.author.id, message.author.username).then(result => {
+            new Player().findPlayer(message.author.id, message.author.username).then(result => {
                 if (!result) {
                     console.log("NO RESULT???", result);
                 } else {
+                    result.displayAvatarURL = message.author.displayAvatarURL;
                     result.pubg.username = args[0];
                     result.pubg.id = null;
                     result.save(function (err) {

@@ -1,6 +1,5 @@
 'use strict';
 const Player = require('../schema/Player.js');
-const MyPubgUsername = require('./MyPubgUsername.js');
 const Discord = require('discord.js');
 const Pubgapi = require('pubg-api');
 const pubg = new Pubgapi(
@@ -19,7 +18,7 @@ class LastMatch {
     }
     async execute(client, message, args, options) {
         let botMessage = await message.reply(`I'm getting the results of your last played match. This could take a few seconds.`);
-        new Player().findPlayerInDatabase(message.author.id, message.author.username)
+        new Player().findPlayer(message.author.id, message.author.username)
         .then(dbPlayer => {
             dbPlayer.getPubgId(client, message.channel.id)
                 .then(playersPubgId => {
@@ -61,15 +60,6 @@ async function createLastMatchOverview(playerId, botMessage, playerMessage) {
                 }
             }
         });
-    });
-}
-
-async function findPlayerIdByName(username) {
-    return pubg.searchPlayers({playerNames: username})
-    .then(result => {
-        return result;
-    }, err => {
-        console.error(err);
     });
 }
 

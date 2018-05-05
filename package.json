@@ -1,0 +1,8 @@
+{
+  "name": "pubgstatssprayer",
+  "version": "1.0.0",
+  "scripts": {
+    "postinstall": "npm install --prefix app"
+  },
+  "description": "PUBG Stats Sprayer"
+}

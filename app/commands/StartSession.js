@@ -6,6 +6,7 @@ const defaultSessionDuration = process.env.DEFAULT_SESSION_DURATION;
 
 // Adding and getting the PUBG username
 class StartSession {
+
     constructor() {
         this.aliases = [
             `startsession`,
@@ -15,8 +16,9 @@ class StartSession {
         this.name = `StartSession`;
         this.errorMessages = {};
     }
+
     execute(client, message, args, options) {
-        new Player().findPlayerInDatabase(message.author.id, message.author.username).then(player => {
+        new Player().findPlayer(message.author.id, message.author.username).then(player => {
             if (!player.checkUsername()) {
                 message.reply(MyPubgUsername.errorMessages.noUsername);
             } else {

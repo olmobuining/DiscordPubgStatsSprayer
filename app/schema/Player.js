@@ -1,6 +1,5 @@
 let mongoose = require('../mongoose.js');
 let Schema = mongoose.Schema;
-const MyPubgUsername = require('../commands/MyPubgUsername.js');
 const Pubgapi = require('pubg-api');
 const pubg = new Pubgapi(
     process.env.PUBG_API_TOKEN,
@@ -13,6 +12,10 @@ let playerSchema = new Schema({
         required: true,
     },
     username: {
+        type: String,
+        required: true,
+    },
+    displayAvatarURL: {
         type: String,
         required: true,
     },
@@ -56,6 +59,7 @@ playerSchema.methods.pubgFindPlayerIdByName = async function (username) {
 };
 
 playerSchema.methods.getPubgId = async function (client, channelId) {
+    var MyPubgUsername = require('../commands/MyPubgUsername.js');
     playerObject = this;
     return new Promise(function (resolve, reject) {
         if (!playerObject.checkUsername()) {
@@ -84,11 +88,11 @@ playerSchema.methods.getPubgId = async function (client, channelId) {
     });
 };
 
-playerSchema.methods.findPlayerInDatabase = async function(discordId, discordUsername) {
+playerSchema.methods.findPlayer = function(discordId, discordUsername) {
     let findId = Player.where({ id: discordId });
     return findId.findOne().exec().then((result) => {
         if (!result) {
-            return Player.create({
+             return Player.create({
                 id: discordId,
                 username: discordUsername,
             }).then(resultingPlayer => {
