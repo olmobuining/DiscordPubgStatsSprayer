@@ -21,35 +21,14 @@ class LastMatch {
         let botMessage = await message.reply(`I'm getting the results of your last played match. This could take a few seconds.`);
         new Player().findPlayerInDatabase(message.author.id, message.author.username)
         .then(dbPlayer => {
-            if (!dbPlayer.checkUsername()) {
-                console.log("Players PUBG username was empty:", dbPlayer.pubg);
-                botMessage.edit(`<@${dbPlayer.id}>, ` + MyPubgUsername.errorMessages.noUsername);
-                return;
-            }
-            if (!dbPlayer.checkId()) {
-                console.log("Players PUBG ID was empty:", dbPlayer.pubg);
-                findPlayerIdByName(dbPlayer.pubg.username)
-                    .then(playerData => {
-                        if (!playerData) {
-                            console.log(playerData);
-                            botMessage.edit("Failed to receive data.");
-                            return;
-                        }
-                        console.log("Players PUBG ID:", playerData.data[0].id);
-                        dbPlayer.pubg.id = playerData.data[0].id;
-                        dbPlayer.save(function (err) {
-                            if (err){
-                                console.log('FAILED', err);
-                            }
-                            console.log('Saved Player');
-                        });
-                        createLastMatchOverview(dbPlayer.pubg.id, botMessage, message);
-                    }, err => {
-                        console.log('ERROR: Failed to get PlayerData by username', err);
-                    });
-            } else {
-                createLastMatchOverview(dbPlayer.pubg.id, botMessage, message);
-            }
+            dbPlayer.getPubgId(client, message.channel.id)
+                .then(playersPubgId => {
+                    createLastMatchOverview(playersPubgId, botMessage, message);
+                })
+                .catch(err => {
+                    console.log(err);
+                    botMessage.edit("Failed to get data.");
+                });
         });
     }
 }

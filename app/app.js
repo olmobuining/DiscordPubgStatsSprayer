@@ -66,11 +66,11 @@ client.on('ready', () => {
         });
     }
 
-    function createLastMatchOverview(matchId, playerId, client, channelId) {
+    function createLastMatchOverview(matchId, player, client, channelId) {
         console.log("loading match");
         pubg.loadMatchById(matchId).then(matchData => {
             for (let item of matchData.raw.included) {
-                if (item.type === "participant" && item.attributes.stats.playerId === playerId) {
+                if (item.type === "participant" && item.attributes.stats.playerId === player.pubg.id) {
                     let damage = Math.round(item.attributes.stats.damageDealt, 2);
                     let rich = new Discord.RichEmbed()
                         .setTitle(`Here's an overview of your last match.`)
@@ -102,7 +102,7 @@ client.on('ready', () => {
                     console.log(`New Match found for: ${session.playerId}`);
                     session.lastMatch = matchId;
                     session.save();
-                    createLastMatchOverview(matchId, player.pubg.id, client, session.channelId);
+                    createLastMatchOverview(matchId, player, client, session.channelId);
                 }
             }).catch(err => {
                 console.log("LastMatchCheck failed : ", err);

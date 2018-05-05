@@ -1,5 +1,11 @@
 let mongoose = require('../mongoose.js');
 let Schema = mongoose.Schema;
+const MyPubgUsername = require('../commands/MyPubgUsername.js');
+const Pubgapi = require('pubg-api');
+const pubg = new Pubgapi(
+    process.env.PUBG_API_TOKEN,
+    { defaultShard: process.env.DEFAULT_SHARD }
+);
 
 let playerSchema = new Schema({
     id: {
@@ -38,6 +44,44 @@ playerSchema.methods.checkId = function () {
         return false;
     }
     return true;
+};
+
+playerSchema.methods.pubgFindPlayerIdByName = async function (username) {
+    return pubg.searchPlayers({playerNames: username})
+        .then(result => {
+            return result;
+        }, err => {
+            console.error(err);
+        });
+};
+
+playerSchema.methods.getPubgId = async function (client, channelId) {
+    playerObject = this;
+    return new Promise(function (resolve, reject) {
+        if (!playerObject.checkUsername()) {
+            console.log("Players PUBG username was empty:", playerObject.pubg);
+            let errorMessage = `<@${playerObject.id}>, ${MyPubgUsername.errorMessages.noUsername}`;
+            client.channels.get(channelId).send(errorMessage);
+            reject(errorMessage);
+        }
+        if (!playerObject.checkId()) {
+            playerObject.pubgFindPlayerIdByName(playerObject.pubg.username).then(pubgPlayer => {
+                playerObject.pubg.id = pubgPlayer.data[0].id;
+                playerObject.save(function (err) {
+                    if (err){
+                        console.log('ERROR: failed to get PUBG ID.', err);
+                    }
+                    console.log('Saved PUBG ID to player', playerObject);
+                });
+                if (!pubgPlayer) {
+                    reject(`Failed to receive your PUBG ID, please make sure your username '${playerObject.pubg.username}' is correct. (case sensitive)`);
+                }
+                resolve(pubgPlayer.data[0].id);
+            });
+        } else {
+            resolve(playerObject.pubg.id);
+        }
+    });
 };
 
 playerSchema.methods.findPlayerInDatabase = async function(discordId, discordUsername) {
