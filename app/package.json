@@ -8,7 +8,7 @@
   "version": "1.0.0",
   "main": "app.js",
   "scripts": {
-    "postinstall": "npm start app.js"
+    "postinstall": "npm install"
   },
   "author": "https://github.com/olmobuining",
   "license": "ISC",
