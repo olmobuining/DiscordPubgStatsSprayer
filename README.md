@@ -15,6 +15,7 @@ This is a bot for your Discord server. The idea for this bot is: For example, yo
 - [ ] Interval check every 5-15 minutes for any completed matches for all the players in the current play session.
 
 #### Feature/code to do:
+There is no order to this to do list, only that done tasks are at the top.
 - [x] Dynamically load commands
 - [x] Use the bot prefix
 - [x] Saving data of a user
