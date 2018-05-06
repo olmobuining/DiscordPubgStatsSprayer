@@ -13,7 +13,7 @@ class IntervalChecker {
         this.checkinterval = setInterval(this.execute, (this.intervalMinutes * 60000));
     }
     execute() {
-        ic = this;
+        var ic = this;
         Session.find().exec().then(sessions => {
             console.log(`Found ${sessions.length} sessions to check`);
             sessions.forEach(session => {
