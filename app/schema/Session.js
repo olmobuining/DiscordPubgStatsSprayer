@@ -17,6 +17,13 @@ let sessionSchema = new Schema({
     channelId: {
         type: String,
     },
+    matches: [
+        {
+            matchId: {
+                type: String,
+            },
+        }
+    ],
 });
 
 let Session = mongoose.model('Session', sessionSchema);

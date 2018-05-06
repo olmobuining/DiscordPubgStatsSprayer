@@ -103,6 +103,18 @@ playerSchema.methods.findPlayer = function(discordId, discordUsername) {
     });
 };
 
+playerSchema.methods.getLastMatchId = function() {
+    return pubg.loadPlayerById(this.pubg.id).then((playerData, err) => {
+        if (!playerData || err) {
+            console.log(`Failed to get last match id for the player`, playerData, err);
+            return;
+        }
+        return playerData.data.relationships.matches.data[0].id;
+    }).catch(err => {
+        console.log("LastMatchCheck failed : ", err);
+    });
+};
+
 let Player = mongoose.model('Player', playerSchema);
 
 module.exports = Player;
