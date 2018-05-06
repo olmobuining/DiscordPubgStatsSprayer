@@ -8,12 +8,12 @@ class IntervalChecker {
         this.intervalMinutes = intervalMinutes;
         this.checkinterval = null;
     }
-    start() {
-        this.execute();
-        this.checkinterval = setInterval(this.execute, (this.intervalMinutes * 60000));
+    start(client) {
+        var ic = client;
+        this.execute(client);
+        this.checkinterval = setInterval(function () { ic.execute(client); } , (this.intervalMinutes * 60000));
     }
-    execute() {
-        var ic = this;
+    execute(client) {
         Session.find().exec().then(sessions => {
             console.log(`Found ${sessions.length} sessions to check`);
             sessions.forEach(session => {
@@ -30,10 +30,10 @@ class IntervalChecker {
                                 session.lastMatch = matchId;
                                 session.save();
                                 let match = new Match(matchId);
-                                player.getPubgId(ic.client, session.channelId).then(playerPubgId => {
+                                player.getPubgId(client, session.channelId).then(playerPubgId => {
                                     match.getRichEmbedFromPlayer(playerPubgId, player).then(embed => {
                                         console.log(`sending richembed:`, embed);
-                                        ic.client.channels.get(session.channelId).send({embed:embed});
+                                        client.channels.get(session.channelId).send({embed:embed});
                                     });
                                 });
                             }
@@ -43,6 +43,5 @@ class IntervalChecker {
             });
         });
     }
-
 }
 module.exports = IntervalChecker;

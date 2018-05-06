@@ -47,7 +47,7 @@ client.on('message', message => {
 
 client.on('ready', () => {
     let ic = new IntervalChecker(client, process.env.DEFAULT_INTERVAL_CHECK_TIME_MIN);
-    ic.start();
+    ic.start(client);
 });
 
 function getCommand(command) {
