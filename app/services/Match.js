@@ -56,6 +56,7 @@ class Match {
                 .addField(`Assists`, item.attributes.stats.assists, true)
                 .addField(`Furthest Kill`, item.attributes.stats.longestKill + `m`, true)
                 .setAuthor(player.username, player.displayAvatarURL)
+                .setURL(`https://pubg.op.gg/user/${player.pubg.username}?server=eu`)
                 .setTimestamp(this.matchData.raw.data.attributes.createdAt);
         });
     }
