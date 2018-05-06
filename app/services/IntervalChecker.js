@@ -13,6 +13,7 @@ class IntervalChecker {
         this.checkinterval = setInterval(this.execute, (this.intervalMinutes * 60000));
     }
     execute() {
+        ic = this;
         Session.find().exec().then(sessions => {
             console.log(`Found ${sessions.length} sessions to check`);
             sessions.forEach(session => {
@@ -29,10 +30,10 @@ class IntervalChecker {
                                 session.lastMatch = matchId;
                                 session.save();
                                 let match = new Match(matchId);
-                                player.getPubgId(this.client, session.channelId).then(playerPubgId => {
+                                player.getPubgId(ic.client, session.channelId).then(playerPubgId => {
                                     match.getRichEmbedFromPlayer(playerPubgId, player).then(embed => {
                                         console.log(`sending richembed:`, embed);
-                                        this.client.channels.get(session.channelId).send({embed:embed});
+                                        ic.client.channels.get(session.channelId).send({embed:embed});
                                     });
                                 });
                             }
