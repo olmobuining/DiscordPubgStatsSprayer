@@ -58,7 +58,14 @@ function getCommand(command) {
     }
 }
 
-client.login(process.env.DISCORD_BOT_TOKEN);
+connectDiscord();
+
+function connectDiscord() {
+    client.login(process.env.DISCORD_BOT_TOKEN).catch(err => {
+        console.log("Bot failed:", err.message);
+        setTimeout(connectDiscord, 30000);
+    });
+}
 
 // Just for heroku
 const express = require('express');

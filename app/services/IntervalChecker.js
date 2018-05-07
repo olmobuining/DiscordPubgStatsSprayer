@@ -9,9 +9,10 @@ class IntervalChecker {
         this.checkinterval = null;
     }
     start(client) {
-        var ic = client;
+        this.client = client;
+        var ic = this;
         this.execute(client);
-        this.checkinterval = setInterval(function () { ic.execute(client); } , (this.intervalMinutes * 60000));
+        this.checkinterval = setInterval(function () { ic.execute(ic.client); }, (this.intervalMinutes * 60000));
     }
     execute(client) {
         Session.find().exec().then(sessions => {
@@ -24,19 +25,23 @@ class IntervalChecker {
                     session.remove();
                 } else {
                     new Player().findPlayer(session.playerId).then(player => {
-                        player.getLastMatchId().then(matchId => {
-                            if (!session.lastMatch || session.lastMatch !== matchId) {
-                                console.log(`New Match found for: ${session.playerId}`);
-                                session.lastMatch = matchId;
-                                session.save();
-                                let match = new Match(matchId);
-                                player.getPubgId(client, session.channelId).then(playerPubgId => {
+                        player.getPubgId(client, session.channelId).then(playerPubgId => {
+                            player.getLastMatchId().then(matchId => {
+                                console.log(`Last matchId ${matchId}, for ${player.username}`);
+                                if (!session.lastMatch || session.lastMatch !== matchId) {
+                                    console.log(`New Match found for: ${session.playerId}`);
+                                    session.matches.push({
+                                        matchId: matchId
+                                    });
+                                    session.lastMatch = matchId;
+                                    session.save();
+                                    let match = new Match(matchId);
                                     match.getRichEmbedFromPlayer(playerPubgId, player).then(embed => {
-                                        console.log(`sending richembed:`, embed);
+                                        console.log(`Sending richembed:`, embed);
                                         client.channels.get(session.channelId).send({embed:embed});
                                     });
-                                });
-                            }
+                                }
+                            });
                         });
                     });
                 }

@@ -14,11 +14,11 @@ class LastMatch {
         let botMessage = await message.reply(`I'm getting the results of your last played match. This could take a few seconds.`);
         new Player().findPlayer(message.author.id, message.author.username)
             .then(dbPlayer => {
-                dbPlayer.getLastMatchId().then(lastMatchId => {
-                    let match = new Match(lastMatchId);
-                    dbPlayer.getPubgId(this.client, message.channel.id).then(playerPubgId => {
+                dbPlayer.getPubgId(this.client, message.channel.id).then(playerPubgId => {
+                    dbPlayer.getLastMatchId().then(lastMatchId => {
+                        let match = new Match(lastMatchId);
                         match.getRichEmbedFromPlayer(playerPubgId, dbPlayer).then(embed => {
-                            console.log(`sending richembed:`, embed);
+                            console.log(`Sending richembed:`, embed);
                             botMessage.delete();
                             botMessage.channel.send({embed:embed});
                         });

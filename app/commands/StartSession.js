@@ -22,7 +22,6 @@ class StartSession {
             if (!player.checkUsername()) {
                 message.reply(MyPubgUsername.errorMessages.noUsername);
             } else {
-                message.reply(`Started your session on ${new Date}`);
                 Session.findOne({playerId: player.id}).exec()
                     .then(session => {
                         if (!session) {
@@ -34,6 +33,7 @@ class StartSession {
                                 channelId: message.channel.id
                             });
                             console.log('Created new session object for user.');
+                            message.reply(`Started your session on ${new Date}`);
                         } else {
                             session.startedAt = new Date;
                             session.channelId = message.channel.id;
@@ -44,6 +44,7 @@ class StartSession {
                                 }
                                 console.log('Saved the new starting time on the session', session);
                             });
+                            message.reply(`Prolonged your session on ${new Date}`);
                         }
                     })
                     .catch(error => {

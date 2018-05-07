@@ -59,38 +59,40 @@ playerSchema.methods.pubgFindPlayerIdByName = async function (username) {
 };
 
 playerSchema.methods.getPubgId = async function (client, channelId) {
-    var MyPubgUsername = require('../commands/MyPubgUsername.js');
-    playerObject = this;
+    let MyPubgUsername = require('../commands/MyPubgUsername.js');
+    thisPlayer = this;
     return new Promise(function (resolve, reject) {
-        if (!playerObject.checkUsername()) {
-            console.log("Players PUBG username was empty:", playerObject.pubg);
-            let errorMessage = `<@${playerObject.id}>, ${MyPubgUsername.errorMessages.noUsername}`;
+        console.log(`Trying to get PUBG ID for ${thisPlayer.username}`);
+        let newPlayerObject = thisPlayer;
+        if (!newPlayerObject.checkUsername()) {
+            console.log("Players PUBG username was empty:", newPlayerObject.pubg);
+            let errorMessage = `<@${newPlayerObject.id}>, ${MyPubgUsername.errorMessages.noUsername}`;
             client.channels.get(channelId).send(errorMessage);
             reject(errorMessage);
         }
-        if (!playerObject.checkId()) {
-            playerObject.pubgFindPlayerIdByName(playerObject.pubg.username).then(pubgPlayer => {
-                playerObject.pubg.id = pubgPlayer.data[0].id;
-                playerObject.save(function (err) {
+        if (!newPlayerObject.checkId()) {
+            console.log(`Player did not have a PUBG ID yet. ${newPlayerObject.username}`);
+            newPlayerObject.pubgFindPlayerIdByName(newPlayerObject.pubg.username).then(pubgPlayer => {
+                newPlayerObject.pubg.id = pubgPlayer.data[0].id;
+                newPlayerObject.save(function (err) {
                     if (err){
                         console.log('ERROR: failed to get PUBG ID.', err);
                     }
-                    console.log('Saved PUBG ID to player', playerObject);
+                    console.log('Saved PUBG ID to player', newPlayerObject);
                 });
                 if (!pubgPlayer) {
-                    reject(`Failed to receive your PUBG ID, please make sure your username '${playerObject.pubg.username}' is correct. (case sensitive)`);
+                    reject(`Failed to receive your PUBG ID, please make sure your username '${newPlayerObject.pubg.username}' is correct. (case sensitive)`);
                 }
                 resolve(pubgPlayer.data[0].id);
             });
         } else {
-            resolve(playerObject.pubg.id);
+            resolve(newPlayerObject.pubg.id);
         }
     });
 };
 
 playerSchema.methods.findPlayer = function(discordId, discordUsername) {
-    let findId = Player.where({ id: discordId });
-    return findId.findOne().exec().then((result) => {
+    return Player.where({ id: discordId }).findOne().exec().then((result) => {
         if (!result) {
              return Player.create({
                 id: discordId,

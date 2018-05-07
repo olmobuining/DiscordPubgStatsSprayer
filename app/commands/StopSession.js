@@ -35,6 +35,10 @@ class StopSession {
 
         });
     }
+
+    endSessionAction() {
+
+    }
 }
 
 module.exports = new StopSession();

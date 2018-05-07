@@ -13,16 +13,54 @@ class RemoveData {
         this.name = `RemoveData`;
     }
     execute(client, message, args, options) {
-        this.removeSessions();
-        // this.removePlayers();
+        // The only person who can mess with the database.
+        if (message.author.id !== "212448886441115648") {
+            console.log("user tried an admin command without permission!", message.author.id, message.author.username);
+            return;
+        }
+
+        if (args.indexOf('sessions') !== -1) {
+            this.removeSessions(message);
+        }
+
+        if (args.indexOf('players') !== -1) {
+            this.removePlayers(message);
+            this.removeSessions(message);
+        }
+
+        if (args.indexOf('pubgids') !== -1) {
+            Player.find().exec().then(users => {
+                for (let user of users) {
+                    console.log(user);
+                    if (user.checkId()) {
+                        user.pubg.id = "";
+                    }
+                    user.save();
+                }
+                message.reply("Removed the associated PUBG ID from each player.");
+            });
+        }
+
+        if (args.indexOf('playerspubg') !== -1) {
+            Player.find().exec().then(user => {
+                if (user.checkId()) {
+                    user.pubg.id = "";
+                }
+                if (user.checkUsername()) {
+                    user.pubg.username = "";
+                }
+                user.save();
+                message.reply("Removed the associated PUBG ID and Username from each player.");
+            })
+        }
     }
-    removeSessions() {
+    removeSessions(message) {
         Session.remove().exec();
         message.reply("Removed all sessions from the database.");
     }
-    removePlayers() {
-        // Player.remove().exec();
-        // message.reply("Removed all players from the database.");
+    removePlayers(message) {
+        Player.remove().exec();
+        message.reply("Removed all players from the database.");
     }
 }
 

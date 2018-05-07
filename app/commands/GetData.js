@@ -18,6 +18,21 @@ class GetData {
         Session.find().exec().then(result => {
             message.channel.send('```' + JSON.stringify(result) + '```');
         });
+        // new Player().findPlayer("95268432638910464", "Ryan").then(user => {
+        //     user.pubg.username = "Ryangr0";
+        //     user.save();
+        // });
+        // return Player.create({
+        //     id: "95268432638910464",
+        //     username: "Ryan",
+        // })
+        // Session.create({
+        //     startedAt: new Date,
+        //     duration: 240,
+        //     lastMatch: null,
+        //     playerId: "95268432638910464",
+        //     channelId: "441617803573985283"
+        // });
     }
 }
 
