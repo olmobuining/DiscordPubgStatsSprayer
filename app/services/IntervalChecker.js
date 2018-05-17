@@ -36,11 +36,20 @@ class IntervalChecker {
                                     session.lastMatch = matchId;
                                     session.save();
                                     let match = new Match(matchId);
-                                    match.getRichEmbedFromPlayer(playerPubgId, player).then(embed => {
-                                        console.log(`Sending richembed:`, embed);
-                                        client.channels.get(session.channelId).send({embed:embed});
+                                    match.getMatchData().then(matchData => {
+                                        if (matchData > session.startedAt) {
+                                            match.getRichEmbedFromPlayer(playerPubgId, player).then(embed => {
+                                                console.log(`Sending richembed:`, embed);
+                                                client.channels.get(session.channelId).send({embed: embed});
+                                            });
+                                        } else {
+                                            console.log(`Not showing match data. Match was played before starting the session.`);
+                                        }
                                     });
+
                                 }
+                            }).catch(err => {
+                                console.log(err);
                             });
                         });
                     });

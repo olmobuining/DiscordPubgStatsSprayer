@@ -111,10 +111,13 @@ playerSchema.methods.getLastMatchId = function() {
             console.log(`Failed to get last match id for the player`, playerData, err);
             return;
         }
-        return playerData.data.relationships.matches.data[0].id;
-    }).catch(err => {
-        console.log("LastMatchCheck failed : ", err);
-    });
+        if (playerData.data.relationships.matches.data.length > 1) {
+            return playerData.data.relationships.matches.data[0].id;
+        }
+        console.log(`no matches found for ${playerData.data.id}`);
+        throw `no matches found for ${playerData.data.attributes.name}`;
+    })
+    ;
 };
 
 let Player = mongoose.model('Player', playerSchema);

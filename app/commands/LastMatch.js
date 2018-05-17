@@ -22,6 +22,9 @@ class LastMatch {
                             botMessage.delete();
                             botMessage.channel.send({embed:embed});
                         });
+                    }).catch(err => {
+                        console.log(err);
+                        botMessage.edit(`Failed to receive data: ${err}`);
                     });
                 });
             })
