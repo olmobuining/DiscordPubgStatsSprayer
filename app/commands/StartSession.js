@@ -12,6 +12,9 @@ class StartSession {
             `startsession`,
             `startSession`,
             `ss`,
+            `addTime`,
+            `AddTime`,
+            `at`,
         ];
         this.name = `StartSession`;
         this.errorMessages = {};

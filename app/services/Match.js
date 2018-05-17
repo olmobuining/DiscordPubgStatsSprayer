@@ -1,5 +1,6 @@
 const Discord = require('discord.js');
 const damageCauserName = require('../assets/pubg/damageCauserName');
+const MatchData = require('../schema/MatchData.js');
 const Pubgapi = require('pubg-api');
 const pubg = new Pubgapi(
     process.env.PUBG_API_TOKEN,
@@ -56,12 +57,27 @@ class Match {
         let matchObject = this;
         return new Promise((resolve, reject) => {
             if(!matchObject.matchData) {
-                console.log(`Match data was not cached for ${matchObject.matchId}`);
-                return resolve(matchObject.fillMatchData().then(matchData => {
-                    return matchData;
+                return resolve(MatchData.where({ id: matchObject.matchId }).findOne().exec().then((result) => {
+                    if (!result) {
+                        return matchObject.fillMatchData()
+                        .then(matchData => {
+                            console.log(`Match data was not cached for ${matchObject.matchId}, creating a new database record`);
+                            return MatchData.create({
+                                id: matchObject.matchId,
+                                data: matchData,
+                            }).then(MatchDataObject => {
+                                matchObject.matchData = matchData;
+                                return matchObject.matchData;
+                            });
+                        });
+                    } else {
+                        console.log(`Match data was database cached for ${matchObject.matchId}`);
+                        matchObject.matchData = result.data;
+                        return matchObject.matchData;
+                    }
                 }));
             } else {
-                console.log(`Match data was cached for ${matchObject.matchId}`);
+                console.log(`Match data was locally cached for ${matchObject.matchId}`);
                 return resolve(matchObject.matchData);
             }
         });
@@ -88,7 +104,7 @@ class Match {
             let survivedMinutes = Math.round(item.attributes.stats.timeSurvived/60);
             return parentMatch.getTelemetry(playerPubgId).then(weaponData => {
                 let embed = new Discord.RichEmbed()
-                    .setTitle(`Here's an overview of your last match.`)
+                    .setTitle(`pubg.op.gg profile page.`)
                     .addField(`Place`, item.attributes.stats.winPlace, true)
                     .addField(`Kills`, item.attributes.stats.kills, true)
                     .addField('Damage', damage, true)

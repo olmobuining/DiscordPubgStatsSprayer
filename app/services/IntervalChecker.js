@@ -14,6 +14,22 @@ class IntervalChecker {
         this.execute(client);
         this.checkinterval = setInterval(function () { ic.execute(ic.client); }, (this.intervalMinutes * 60000));
     }
+
+    processMatch(client, session, playerPubgId, player, matchId) {
+        let match = new Match(matchId);
+        match.getMatchData().then(matchData => {
+            let buildMatch = match;
+            if ((new Date(matchData.raw.data.attributes.createdAt)).getTime() > session.startedAt.getTime()) {
+                buildMatch.getRichEmbedFromPlayer(playerPubgId, player).then(embed => {
+                    console.log(`Sending richembed:`, embed);
+                    client.channels.get(session.channelId).send({embed: embed});
+                });
+            } else {
+                console.log(`Not showing match data. Match was played before starting the session.`);
+            }
+        });
+    }
+
     execute(client) {
         Session.find().exec().then(sessions => {
             console.log(`Found ${sessions.length} sessions to check`);
@@ -30,24 +46,20 @@ class IntervalChecker {
                             player.getLastMatchId().then(matchId => {
                                 console.log(`Last matchId ${matchId}, for ${player.username}`);
                                 if (!session.lastMatch || session.lastMatch !== matchId) {
-                                    console.log(`New Match found for: ${session.playerId}`);
+                                    console.log(`New Match found for: ${session.playerId}, username: ${player.username}`);
                                     session.matches.push({
                                         matchId: matchId
                                     });
                                     session.lastMatch = matchId;
                                     session.save();
-                                    let match = new Match(matchId);
-                                    match.getMatchData().then(matchData => {
-                                        if (matchData > session.startedAt) {
-                                            match.getRichEmbedFromPlayer(playerPubgId, player).then(embed => {
-                                                console.log(`Sending richembed:`, embed);
-                                                client.channels.get(session.channelId).send({embed: embed});
-                                            });
-                                        } else {
-                                            console.log(`Not showing match data. Match was played before starting the session.`);
+                                    player.getMatches().then(matches => {
+                                        for (let matchNumber = 4; matchNumber >= 0; matchNumber--) {
+                                            if (typeof matches[matchNumber] !== "undefined" && typeof matches[matchNumber].id !== "undefined") {
+                                                console.log(`Checking match ${matches[matchNumber].id}, username: ${player.username}`);
+                                                this.processMatch(client, session, playerPubgId, player, matches[matchNumber].id);
+                                            }
                                         }
                                     });
-
                                 }
                             }).catch(err => {
                                 console.log(err);

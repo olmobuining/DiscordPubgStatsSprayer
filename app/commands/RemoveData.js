@@ -1,6 +1,7 @@
 'use strict';
 const Player = require('../schema/Player.js');
 const Session = require('../schema/Session.js');
+const MatchData = require('../schema/MatchData.js');
 
 // Just for test purposes
 // It removes all players in the database to have a clean sheet
@@ -26,6 +27,10 @@ class RemoveData {
         if (args.indexOf('players') !== -1) {
             this.removePlayers(message);
             this.removeSessions(message);
+        }
+
+        if (args.indexOf('matches') !== -1) {
+            this.removeMatches(message);
         }
 
         if (args.indexOf('pubgids') !== -1) {
@@ -57,6 +62,10 @@ class RemoveData {
     removeSessions(message) {
         Session.remove().exec();
         message.reply("Removed all sessions from the database.");
+    }
+    removeMatches(message) {
+        MatchData.remove().exec();
+        message.reply("Removed all MatchData from the database.");
     }
     removePlayers(message) {
         Player.remove().exec();
