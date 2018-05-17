@@ -22,6 +22,7 @@ class IntervalChecker {
                 let now = new Date;
                 if (now.valueOf() > endTimestamp) {
                     // session.endSession(); // Future function to give an overview of played matches
+                    console.log(`This session has expired.`, session);
                     session.remove();
                 } else {
                     new Player().findPlayer(session.playerId).then(player => {

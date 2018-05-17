@@ -32,7 +32,7 @@ class StartSession {
                                 playerId: player.id,
                                 channelId: message.channel.id
                             });
-                            console.log('Created new session object for user.');
+                            console.log('Created new session object for user.', player);
                             message.reply(`Started your session on ${new Date}`);
                         } else {
                             session.startedAt = new Date;
@@ -50,7 +50,6 @@ class StartSession {
                     .catch(error => {
                         console.log(error);
                     });
-
             }
         });
     }

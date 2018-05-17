@@ -13,11 +13,11 @@ class Match {
     }
     getTelemetry(playerId) {
         return this.getMatchData().then(matchData => {
-            return pubg.findTelemetryURLs(matchData).then(i => {
-                return pubg.loadTelemetry(i).then(b => {
-                    console.log(`looping through ${b.length} items`);
+            return pubg.findTelemetryURLs(matchData).then(url => {
+                return pubg.loadTelemetry(url).then(telemetry => {
+                    console.log(`looping through ${telemetry.length} items`);
                     let weapons = {};
-                    b.forEach(item => {
+                    telemetry.forEach(item => {
                         if ((typeof item.attacker !== "undefined" && item.attacker.accountId === playerId
                             )
                             && (item._T === 'LogPlayerTakeDamage')

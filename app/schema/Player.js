@@ -105,19 +105,25 @@ playerSchema.methods.findPlayer = function(discordId, discordUsername) {
     });
 };
 
-playerSchema.methods.getLastMatchId = function() {
+playerSchema.methods.getMatches = function() {
     return pubg.loadPlayerById(this.pubg.id).then((playerData, err) => {
         if (!playerData || err) {
             console.log(`Failed to get last match id for the player`, playerData, err);
-            return;
+            throw `Failed to get data.`;
         }
         if (playerData.data.relationships.matches.data.length > 1) {
-            return playerData.data.relationships.matches.data[0].id;
+            return playerData.data.relationships.matches.data;
         }
         console.log(`no matches found for ${playerData.data.id}`);
-        throw `no matches found for ${playerData.data.attributes.name}`;
+        throw `No matches found for ${playerData.data.attributes.name}`;
     })
     ;
+};
+
+playerSchema.methods.getLastMatchId = function() {
+    return this.getMatches().then(matches => {
+        return matches[0].id;
+    });
 };
 
 let Player = mongoose.model('Player', playerSchema);
