@@ -8,6 +8,7 @@ class IntervalChecker {
         this.intervalMinutes = intervalMinutes;
         this.checkinterval = null;
     }
+
     start(client) {
         this.client = client;
         var ic = this;
@@ -52,6 +53,8 @@ class IntervalChecker {
                                     });
                                     session.lastMatch = matchId;
                                     session.save();
+                                    this.processMatch(client, session, playerPubgId, player, matchId);
+                                    /* Tmp disable until we find a way to track matches
                                     player.getMatches().then(matches => {
                                         for (let matchNumber = 4; matchNumber >= 0; matchNumber--) {
                                             if (typeof matches[matchNumber] !== "undefined" && typeof matches[matchNumber].id !== "undefined") {
@@ -60,6 +63,7 @@ class IntervalChecker {
                                             }
                                         }
                                     });
+                                    */
                                 }
                             }).catch(err => {
                                 console.log(err);

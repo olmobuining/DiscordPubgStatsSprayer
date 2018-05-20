@@ -77,4 +77,5 @@ module.exports = {
   'WeapWin94_C': "Win94",
   'WeapWinchester_C': "S1897",
   'WeapFNFal_C': "SLR",
+  'Damage_Melee': "Melee",
 };

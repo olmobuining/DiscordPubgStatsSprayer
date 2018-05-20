@@ -32,6 +32,15 @@ class Match {
                                     weapons[item.damageCauserName].damage += item.damage;
                                     weapons[item.damageCauserName].shots += 1;
                                 }
+                            } else if (item.damageTypeCategory === "Damage_Melee"){
+                                if (typeof weapons[item.damageTypeCategory] === "undefined") {
+                                    weapons[item.damageTypeCategory] = {};
+                                    weapons[item.damageTypeCategory].damage = item.damage;
+                                    weapons[item.damageTypeCategory].shots = 1;
+                                } else {
+                                    weapons[item.damageTypeCategory].damage += item.damage;
+                                    weapons[item.damageTypeCategory].shots += 1;
+                                }
                             } else {
                                 // No weapon: check https://github.com/pubg/api-assets/blob/master/dictionaries/telemetry/damageTypeCategory.json
                                 console.log(item);
@@ -116,7 +125,7 @@ class Match {
                     .setFooter(`Surviving for ${survivedMinutes} minutes (${item.attributes.stats.timeSurvived} seconds).`)
                     .setTimestamp(this.matchData.raw.data.attributes.createdAt);
                 for (let weaponType in weaponData) {
-                    embed.addField(`Damage (shots): ${damageCauserName[weaponType]}`, Math.round(weaponData[weaponType].damage) + ` (${weaponData[weaponType].shots})`);
+                    embed.addField(`Damage (hits): ${damageCauserName[weaponType]}`, Math.round(weaponData[weaponType].damage) + ` (${weaponData[weaponType].shots})`);
                 }
                 return embed;
             });
