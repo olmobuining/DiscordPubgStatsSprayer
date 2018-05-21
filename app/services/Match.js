@@ -21,7 +21,7 @@ class Match {
                     )
                     && (item._T === 'LogPlayerTakeDamage')
                 ) {
-                    if (item.damageTypeCategory === "Damage_Gun") {
+                    if (item.damageTypeCategory === "Damage_Gun" || item.damageTypeCategory === "Damage_Explosion_Grenade") {
                         if (typeof weapons[item.damageCauserName] === "undefined") {
                             weapons[item.damageCauserName] = {};
                             weapons[item.damageCauserName].damage = item.damage;
@@ -127,7 +127,7 @@ class Match {
     findPlayerData(playerPubgId) {
         return this.getMatchData().then(matchData => {
             // console.log(matchData);
-            console.log(`Found match data and looking for player ${playerPubgId} in this data.`);
+            console.log(`Looking for player ${playerPubgId} in this matchData.`);
             for (let item of matchData.raw.included) {
                 if (item.type === "participant" && item.attributes.stats.playerId === playerPubgId) {
                     return item;
