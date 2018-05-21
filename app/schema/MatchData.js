@@ -16,7 +16,7 @@ let matchSchema = new Schema({
         },
         players: [
             {
-                data: {
+                weapons: {
                     type: Object,
                 },
                 id: {
