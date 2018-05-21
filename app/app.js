@@ -48,6 +48,7 @@ client.on('message', message => {
 client.on('ready', () => {
     let ic = new IntervalChecker(client, process.env.DEFAULT_INTERVAL_CHECK_TIME_MIN);
     ic.start(client);
+    console.log(`Logged in as ${client.user.tag}!`);
 });
 
 function getCommand(command) {

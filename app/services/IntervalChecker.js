@@ -11,7 +11,7 @@ class IntervalChecker {
 
     start(client) {
         this.client = client;
-        var ic = this;
+        let ic = this;
         this.execute(client);
         this.checkinterval = setInterval(function () { ic.execute(ic.client); }, (this.intervalMinutes * 60000));
     }

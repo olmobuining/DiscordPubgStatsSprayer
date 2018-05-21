@@ -23,7 +23,7 @@ class Match {
                 console.log(`Some players where cached in the match ${this.matchId}`);
                 for (let playerKey in matchDataObject.telemetry.players) {
                     if (matchDataObject.telemetry.players[playerKey].id === playerId) {
-                        console.log(`Returning cached player weapons for: ${playerId}`, matchDataObject.telemetry.players[playerKey].weapons);
+                        console.log(`Returning cached player weapons for: ${playerId}`);
                         return matchDataObject.telemetry.players[playerKey].weapons;
                     }
                 }
@@ -163,6 +163,16 @@ class Match {
             return false;
         });
     }
+    randomChickenDinnerImage() {
+        const images = [
+            'https://i.ebayimg.com/images/g/AeQAAOSw8lpZJz2k/s-l1600.jpg',
+            'https://ih1.redbubble.net/image.374573832.5501/flat,800x800,075,f.jpg',
+            'https://www.tshirtxy.com/sites/default/files/styles/flexslider_full/public/tshirt-image-new/main/game-pubg-t-shirt-for-men-winner-winner-chicken-dinner-short-sleeve-tee-xxxl-247615.jpg?itok=FsDTIqHa',
+            'https://i.pinimg.com/originals/eb/4a/ce/eb4ace9e73cff240a963a742dea0ff6c.jpg',
+            'https://www.spreadshirt.com.au/image-server/v1/mp/designs/1012141713,width=178,height=178/pubg-winner-winner-chicken-dinner.png',
+        ];
+        return images[Math.floor(Math.random() * images.length)];
+    }
     getRichEmbedFromPlayer(playerPubgId, player) {
         let tmpMatch = this;
         return this.findPlayerData(playerPubgId).then(item => {
@@ -171,6 +181,7 @@ class Match {
             let damage = Math.round(item.attributes.stats.damageDealt);
             let survivedMinutes = Math.round(item.attributes.stats.timeSurvived/60);
             return parentMatch.getWeapons(playerPubgId).then(weaponData => {
+                let chickenDinner = (item.attributes.stats.winPlace === 1);
                 let embed = new Discord.RichEmbed()
                     .setTitle(`pubg.op.gg profile page.`)
                     .addField(`Place`, item.attributes.stats.winPlace, true)
@@ -183,6 +194,13 @@ class Match {
                     .setURL(`https://pubg.op.gg/user/${player.pubg.username}?server=eu`)
                     .setFooter(`Surviving for ${survivedMinutes} minutes (${item.attributes.stats.timeSurvived} seconds).`)
                     .setTimestamp(this.matchData.raw.data.attributes.createdAt);
+                if (item.attributes.stats.winPlace > 1 && item.attributes.stats.winPlace < 11) {
+                    embed.setColor('GREEN')
+                }
+                if (chickenDinner) {
+                    embed.setColor('GOLD')
+                        .setImage(this.randomChickenDinnerImage());
+                }
                 for (let weaponType in weaponData) {
                     embed.addField(`Damage (hits): ${damageCauserName[weaponType]}`, Math.round(weaponData[weaponType].damage) + ` (${weaponData[weaponType].shots})`);
                 }
