@@ -5,6 +5,7 @@ let matchSchema = new Schema({
     id: {
         type: String,
         required: true,
+        unique: true,
     },
     data: {
         type: Object,

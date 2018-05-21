@@ -12,43 +12,76 @@ class Match {
         this.matchId = matchId;
         this.matchData = false;
     }
-    getTelemetry(playerId) {
-        return this.getMatchData().then(matchData => {
-            return pubg.findTelemetryURLs(matchData).then(url => {
-                return pubg.loadTelemetry(url).then(telemetry => {
-                    console.log(`looping through ${telemetry.length} items`);
-                    let weapons = {};
-                    telemetry.forEach(item => {
-                        if ((typeof item.attacker !== "undefined" && item.attacker.accountId === playerId
-                            )
-                            && (item._T === 'LogPlayerTakeDamage')
-                        ) {
-                            if (item.damageTypeCategory === "Damage_Gun") {
-                                if (typeof weapons[item.damageCauserName] === "undefined") {
-                                    weapons[item.damageCauserName] = {};
-                                    weapons[item.damageCauserName].damage = item.damage;
-                                    weapons[item.damageCauserName].shots = 1;
-                                } else {
-                                    weapons[item.damageCauserName].damage += item.damage;
-                                    weapons[item.damageCauserName].shots += 1;
-                                }
-                            } else if (item.damageTypeCategory === "Damage_Melee"){
-                                if (typeof weapons[item.damageTypeCategory] === "undefined") {
-                                    weapons[item.damageTypeCategory] = {};
-                                    weapons[item.damageTypeCategory].damage = item.damage;
-                                    weapons[item.damageTypeCategory].shots = 1;
-                                } else {
-                                    weapons[item.damageTypeCategory].damage += item.damage;
-                                    weapons[item.damageTypeCategory].shots += 1;
-                                }
-                            } else {
-                                // No weapon: check https://github.com/pubg/api-assets/blob/master/dictionaries/telemetry/damageTypeCategory.json
-                                console.log(item);
-                            }
+    getWeapons(playerId) {
+        return this.getTelemetry().then(telemetry => {
+            console.log(`looping through ${telemetry.length} items`);
+            let weapons = {};
+            telemetry.forEach(item => {
+                if ((typeof item.attacker !== "undefined" && item.attacker.accountId === playerId
+                    )
+                    && (item._T === 'LogPlayerTakeDamage')
+                ) {
+                    if (item.damageTypeCategory === "Damage_Gun") {
+                        if (typeof weapons[item.damageCauserName] === "undefined") {
+                            weapons[item.damageCauserName] = {};
+                            weapons[item.damageCauserName].damage = item.damage;
+                            weapons[item.damageCauserName].shots = 1;
+                        } else {
+                            weapons[item.damageCauserName].damage += item.damage;
+                            weapons[item.damageCauserName].shots += 1;
                         }
+                    } else if (item.damageTypeCategory === "Damage_Melee"){
+                        if (typeof weapons[item.damageTypeCategory] === "undefined") {
+                            weapons[item.damageTypeCategory] = {};
+                            weapons[item.damageTypeCategory].damage = item.damage;
+                            weapons[item.damageTypeCategory].shots = 1;
+                        } else {
+                            weapons[item.damageTypeCategory].damage += item.damage;
+                            weapons[item.damageTypeCategory].shots += 1;
+                        }
+                    } else {
+                        // No weapon: check https://github.com/pubg/api-assets/blob/master/dictionaries/telemetry/damageTypeCategory.json
+                        console.log(item);
+                    }
+                }
+            });
+            // console.log(weapons);
+            return weapons;
+        });
+    }
+    getTelemetry() {
+        let matchObject = this;
+        return MatchData.where({ id: this.matchId }).findOne().exec().then((matchDataObject) => {
+            if (!matchDataObject) {
+                return matchObject.fillTelemetryData().then(matchDataObject => {
+                    return matchDataObject.telemetry.data;
+                });
+            } else {
+                if (typeof matchDataObject.telemetry === 'undefined' || typeof matchDataObject.telemetry.data === 'undefined') {
+                    return matchObject.fillTelemetryData().then(matchDataObject => {
+                        return matchDataObject.telemetry.data;
                     });
-                    // console.log(weapons);
-                    return weapons;
+                } else {
+                    console.log(`Telemetry data was already filled in the database for: ${matchObject.matchId}`);
+                    return matchDataObject.telemetry.data;
+                }
+            }
+
+        });
+    }
+    fillTelemetryData() {
+        let matchObject = this;
+        console.log(`Attempting to fill telemetry data for: ${matchObject.matchId}`);
+        return this.getMatchData().then(matchData => {
+            return MatchData.where({ id: this.matchId }).findOne().exec().then((matchDataObject) => {
+                return pubg.findTelemetryURLs(matchData).then(url => {
+                    return pubg.loadTelemetry(url).then(telemetry => {
+                        matchDataObject.telemetry.data = telemetry;
+                        matchDataObject.save().then(matchDataObject => {
+                            console.log(`Saved telemetry data for: ${matchObject.matchId}`);
+                            return matchDataObject;
+                        });
+                    });
                 });
             });
         });
@@ -111,7 +144,7 @@ class Match {
             console.log(`Building RichEmbed for player ${playerPubgId}`);
             let damage = Math.round(item.attributes.stats.damageDealt);
             let survivedMinutes = Math.round(item.attributes.stats.timeSurvived/60);
-            return parentMatch.getTelemetry(playerPubgId).then(weaponData => {
+            return parentMatch.getWeapons(playerPubgId).then(weaponData => {
                 let embed = new Discord.RichEmbed()
                     .setTitle(`pubg.op.gg profile page.`)
                     .addField(`Place`, item.attributes.stats.winPlace, true)

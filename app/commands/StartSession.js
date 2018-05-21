@@ -15,6 +15,8 @@ class StartSession {
             `addTime`,
             `AddTime`,
             `at`,
+            `start`,
+            `Start`,
         ];
         this.name = `StartSession`;
         this.errorMessages = {};
@@ -44,10 +46,11 @@ class StartSession {
                             session.save(function (err) {
                                 if (err){
                                     console.log('Failed to update the start time', err);
+                                    return;
                                 }
                                 console.log('Saved the new starting time on the session', session);
+                                message.reply(`Prolonged your session on ${new Date}`);
                             });
-                            message.reply(`Prolonged your session on ${new Date}`);
                         }
                     })
                     .catch(error => {
