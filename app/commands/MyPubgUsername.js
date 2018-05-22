@@ -20,9 +20,8 @@ class MyPubgUsername {
     }
     execute(client, message, args, options) {
         let cb = new CallbackAction('replies');
-        return User.findOrCreate(message.author.id, message.author.username, message.author.displayAvatarURL)
+        return User.findOneOrCreate(message.author.id, message.author.username, message.author.displayAvatarURL)
         .then(foundUser => {
-            console.log(`Found user ${foundUser.discord.username}`);
             if (args.length === 0) {
                 return foundUser.getPubgUsername().then(
                     username => {
@@ -42,13 +41,13 @@ class MyPubgUsername {
                             cb.addReply(`Saved your new PUBG username: ${updatedUser.pubg.username}`);
                             return cb;
                         });
-                    }, err => {
-                        console.log(err);
+                    })
+                    .catch(reason => {
+                        console.error("pubg.searchPlayerserror:", reason);
                         return new Promise((resolve, reject) => {
                             return reject(`Failed to find/save your new username. Please try again. (case sensitive)`);
                         })
                     });
-
             }
         })
         ;
