@@ -1,6 +1,11 @@
 'use strict';
 const User = require('../User/User.js');
 const CallbackAction = require('../CallbackAction');
+const Pubgapi = require('pubg-api');
+const pubg = new Pubgapi(
+    process.env.PUBG_API_TOKEN,
+    { defaultShard: process.env.DEFAULT_SHARD }
+);
 
 // Adding and getting the PUBG username
 class MyPubgUsername {
@@ -26,14 +31,24 @@ class MyPubgUsername {
                     }
                 );
             } else if (args.length === 1) {
-                foundUser.displayAvatarURL = message.author.displayAvatarURL;
-                foundUser.pubg.username = args[0];
-                foundUser.pubg.id = null;
-                return foundUser.save().then(updatedUser => {
-                    console.log(`Saved username ${args[0]} to ${updatedUser.discord.id}`);
-                    cb.addReply(`Saved your new PUBG username: ${updatedUser.pubg.username}`);
-                    return cb;
-                });
+                const newUsername = args[0];
+                return pubg.searchPlayers({playerNames: newUsername})
+                    .then(pubgPlayer => {
+                        foundUser.displayAvatarURL = message.author.displayAvatarURL;
+                        foundUser.pubg.username = newUsername;
+                        foundUser.pubg.id = pubgPlayer.data[0].id;
+                        return foundUser.save().then(updatedUser => {
+                            console.log(`Saved username ${newUsername} to ${updatedUser.discord.id} (PUBG ID: ${pubgPlayer.data[0].id})`);
+                            cb.addReply(`Saved your new PUBG username: ${updatedUser.pubg.username}`);
+                            return cb;
+                        });
+                    }, err => {
+                        console.log(err);
+                        return new Promise((resolve, reject) => {
+                            return reject(`Failed to find/save your new username. Please try again. (case sensitive)`);
+                        })
+                    });
+
             }
         })
         ;

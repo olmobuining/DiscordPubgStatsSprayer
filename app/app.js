@@ -37,7 +37,6 @@ client.on('message', message => {
     }
 });
 
-
 client.commands = new Discord.Collection();
 client.aliases = new Discord.Collection();
 fs.readdir(`./commands/`, (err, files) => {
