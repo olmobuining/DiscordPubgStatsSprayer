@@ -1,6 +1,6 @@
 'use strict';
-const prefix = process.env.BOT_PREFIX;
-const Player = require('../schema/Player.js');
+const User = require('../User/User.js');
+const CallbackAction = require('../CallbackAction');
 
 // Adding and getting the PUBG username
 class MyPubgUsername {
@@ -12,37 +12,32 @@ class MyPubgUsername {
             `un`,
         ];
         this.name = `MyPubgUsername`;
-        this.errorMessages = {
-            noUsername: `I'm sorry, I don't know your PUBG username yet.\nPlease tell me your username by typing: \`${prefix}${this.name} yourPUBGusernameHERE\``
-        };
     }
     execute(client, message, args, options) {
-        if (args.length === 0) {
-            new Player().findPlayer(message.author.id, message.author.username).then(result => {
-                if (!result.checkUsername()) {
-                    message.reply(this.errorMessages.noUsername);
-                } else {
-                    message.reply(`According to me, your PUBG username is: ${result.pubg.username}`);
-                }
-            });
-        } else if (args.length === 1) {
-            new Player().findPlayer(message.author.id, message.author.username).then(result => {
-                if (!result) {
-                    console.log("NO RESULT???", result);
-                } else {
-                    result.displayAvatarURL = message.author.displayAvatarURL;
-                    result.pubg.username = args[0];
-                    result.pubg.id = null;
-                    result.save(function (err) {
-                        if (err){
-                            console.log('FAILED', err);
-                        }
-                        console.log('Saved Player', result);
-                    });
-                }
-            });
-            message.reply("Your PUBG username is set to: " + args[0]);
-        }
+        let cb = new CallbackAction('replies');
+        return User.findOrCreate(message.author.id, message.author.username, message.author.displayAvatarURL)
+        .then(foundUser => {
+            console.log(`Found user ${foundUser.discord.username}`);
+            if (args.length === 0) {
+                return foundUser.getPubgUsername().then(
+                    username => {
+                        cb.addReply(`According to me, your PUBG username is: ${username}`);
+                        return cb;
+                    }
+                );
+            } else if (args.length === 1) {
+                foundUser.displayAvatarURL = message.author.displayAvatarURL;
+                foundUser.pubg.username = args[0];
+                foundUser.pubg.id = null;
+                return foundUser.save().then(updatedUser => {
+                    console.log(`Saved username ${args[0]} to ${updatedUser.discord.id}`);
+                    cb.addReply(`Saved your new PUBG username: ${updatedUser.pubg.username}`);
+                    return cb;
+                });
+            }
+        })
+        ;
+
     }
 }
 
