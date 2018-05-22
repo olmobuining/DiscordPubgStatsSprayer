@@ -55,7 +55,7 @@ UserSchema.methods.getPubgUsername = function () {
 };
 
 UserSchema.statics.findOrCreate = function (discordId, discordUsername, displayAvatarURL) {
-    return this.findOne({discord:{id: discordId, username: discordUsername}}).exec().then(foundUser => {
+    return this.findOne({'discord.id': discordId, 'discord.username': discordUsername}).exec().then(foundUser => {
         if (!foundUser) {
             console.log(`Creating Discord user ${discordId}::${discordUsername}`);
             return this.create({
@@ -68,7 +68,6 @@ UserSchema.statics.findOrCreate = function (discordId, discordUsername, displayA
                 return createdUser;
             });
         } else {
-            console.log(foundUser);
             console.log(`Found Discord user ${discordId}::${discordUsername}`);
             return new Promise(resolve => {
                 return resolve(foundUser);
