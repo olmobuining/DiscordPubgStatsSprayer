@@ -5,6 +5,7 @@ const client = new Discord.Client();
 const fs = require('fs');
 const prefix = process.env.BOT_PREFIX;
 const Callback = require('./Callback.js');
+const SessionTask = require('./Session/SessionTask.js');
 
 client.on('message', message => {
     // Ignore other bots
@@ -31,10 +32,25 @@ client.on('message', message => {
             cb.call(result);
         })
         .catch(error => {
+            console.log(error);
             message.reply(error);
         })
         ;
     }
+});
+
+client.on('ready', () => {
+    SessionTask(client);
+    setInterval(function () { SessionTask(client); }, (process.env.DEFAULT_INTERVAL_CHECK_TIME_MIN * 60000));
+});
+
+client.on('error', console.log);
+client.on('warn', console.log);
+client.on('guildCreate', guild => {
+    console.info(`New Discord server: ${guild.name} '${guild.id}'. This server has ${guild.memberCount} members.`);
+});
+client.on('guildDelete', guild => {
+    console.info(`Discord server: ${guild.name} '${guild.id}' has removed the bot.`);
 });
 
 client.commands = new Discord.Collection();
@@ -53,6 +69,7 @@ fs.readdir(`./commands/`, (err, files) => {
         });
     });
 });
+
 // Get a command by name or alias
 function getCommand(command) {
     if (client.commands.has(command)) {
@@ -70,6 +87,7 @@ function connectDiscord() {
         setTimeout(connectDiscord, 30000);
     });
 }
+
 // Just for heroku
 const express = require('express');
 const app = express();

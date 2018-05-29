@@ -27,19 +27,27 @@ class StartSession {
         .then(foundUser => {
             return Session.findOne({user: foundUser}).exec().then(session => {
                 if (!session) {
-                    console.log('NOT FOUND in database, creating...');
+                    console.log(`Creating new session for discord ID: ${foundUser.discord.id}`);
                     Session.create({
                         startedAt: new Date,
-                        duration: defaultSessionDuration,
+                        duration: parseInt(defaultSessionDuration),
                         user: foundUser,
                         channel: {
                             id: message.channel.id,
                         },
                     });
-                    return cb;
+                    cb.addReply(`Starting your session. Enjoy!`);
+                } else {
+                    console.log(`Adding time to session for discord ID: ${foundUser.discord.id}`);
+                    if (session.channel.id !== message.channel.id) {
+                        session.channel.id = message.channel.id;
+                        cb.addReply(`I will post your match results in this channel`);
+                    }
+                    session.duration = parseInt(session.duration)+parseInt(defaultSessionDuration);
+                    let endTime = new Date(session.startedAt.valueOf() + (60000*session.duration));
+                    cb.addReply(`Added ${defaultSessionDuration} minutes to your session. Your session will end ${endTime}`);
+                    session.save();
                 }
-                console.log('found in database');
-                console.log(session);
                 return cb;
             })
         });

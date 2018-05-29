@@ -43,7 +43,7 @@ class MyPubgUsername {
                         });
                     })
                     .catch(reason => {
-                        console.error("pubg.searchPlayerserror:", reason);
+                        console.error("pubg.searchPlayers error:", reason);
                         return new Promise((resolve, reject) => {
                             return reject(`Failed to find/save your new username. Please try again. (case sensitive)`);
                         })
