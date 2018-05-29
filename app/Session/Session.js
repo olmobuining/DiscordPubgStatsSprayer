@@ -2,6 +2,7 @@ let mongoose = require('../mongoose.js');
 let Schema = mongoose.Schema;
 const CallbackAction = require('../CallbackAction');
 const User = require('../User/User.js');
+const Match = require('../Match/Match.js');
 
 let sessionSchema = new Schema({
     startedAt: {
@@ -52,14 +53,18 @@ sessionSchema.methods.task = function() {
     if (now.valueOf() > endTimestamp) {
         console.log(`This session has expired.`, this);
         return this.getUser().then(user => {
-            cb.addMessage(`Session of ${user.discord.username} has expired and has been stopped.`);
+            cb.addMessage(`Session time of ${user.discord.username} has expired and has been stopped.`);
             this.remove();
             return cb;
         });
+    } else {
+        return this.getUser().then(user => {
+            return user.getLastMatchEmbed().then(embed => {
+                cb.addMessage(embed);
+                return cb;
+            });
+        });
     }
-    return new Promise(resolve => {
-        return resolve(cb);
-    });
 };
 
 let Session = mongoose.model('Session', sessionSchema);

@@ -1,5 +1,12 @@
 let mongoose = require('../mongoose.js');
 let Schema = mongoose.Schema;
+const Match = require('../Match/Match.js');
+const Pubgapi = require('pubg-api');
+const pubg = new Pubgapi(
+    process.env.PUBG_API_TOKEN,
+    { defaultShard: process.env.DEFAULT_SHARD }
+);
+const Discord = require('discord.js');
 
 let UserSchema = new Schema({
     discord: {
@@ -47,11 +54,54 @@ UserSchema.methods.checkId = function () {
 UserSchema.methods.getPubgUsername = function () {
     return new Promise((resolve, reject) => {
         if (!this.checkUsername()) {
-            return reject(`I'm sorry, I don't know your PUBG username yet.\nPlease tell me your username by typing: \`${process.env.BOT_PREFIX}MyUsername yourPUBGusernameHERE\``);
+            return reject(`<@${this.discord.id}>, I'm sorry. I don't know your PUBG username yet.\nPlease tell me your username by typing: \`${process.env.BOT_PREFIX}MyUsername yourPUBGusernameHERE\` `);
         }
         return resolve(this.pubg.username);
     });
 
+};
+
+UserSchema.methods.getMatches = function() {
+    return this.getPubgUsername().then(username => {
+        console.log(`Getting matches for ${username}::${this.pubg.id}`);
+        return pubg.loadPlayerById(this.pubg.id).then((playerData, err) => {
+            if (!playerData || err) {
+                console.log(`Failed to get last match id for the player`, playerData, err);
+                throw `Failed to get data.`;
+            }
+            if (playerData.data.relationships.matches.data.length > 0) {
+                return playerData.data.relationships.matches.data;
+            }
+            console.log(`No matches found for ${playerData.data.id}`);
+            throw `No matches found for ${playerData.data.attributes.name}`;
+        })
+        ;
+    });
+};
+
+UserSchema.methods.getLastMatchEmbed = function() {
+    return this.getMatches().then(matches => {
+        return Match.findOneAndLoad(matches[0].id).then(match => {
+            return match.findPlayerData(this.pubg.id).then(playerItem => {
+                let damage = Math.round(playerItem.attributes.stats.damageDealt);
+                let survivedMinutes = Math.round(playerItem.attributes.stats.timeSurvived/60);
+                let embed = new Discord.RichEmbed()
+                    .setTitle(`pubg.op.gg profile page.`)
+                    .addField(`Place`, playerItem.attributes.stats.winPlace, true)
+                    .addField(`Kills`, playerItem.attributes.stats.kills, true)
+                    .addField('Damage', damage, true)
+                    .addField(`DBNOs`, playerItem.attributes.stats.DBNOs, true)
+                    .addField(`Assists`, playerItem.attributes.stats.assists, true)
+                    .addField(`Furthest Kill`, playerItem.attributes.stats.longestKill + `m`, true)
+                    .setAuthor(this.discord.username, this.discord.displayAvatarURL)
+                    .setURL(`https://pubg.op.gg/user/${this.pubg.username}?server=eu`)
+                    .setFooter(`Surviving for ${survivedMinutes} minutes (${playerItem.attributes.stats.timeSurvived} seconds).`)
+                    .setTimestamp(match.data.raw.data.attributes.createdAt);
+
+                return embed;
+            });
+        });
+    });
 };
 
 UserSchema.statics.findOneOrCreate = function (discordId, discordUsername, displayAvatarURL) {
