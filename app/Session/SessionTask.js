@@ -2,10 +2,9 @@ const Session = require('./Session.js');
 const Callback = require('../Callback.js');
 
 const SessionTask = function (client) {
-
     console.log(`Starting the session task!`);
 
-    Session.find().exec().then(sessions => {
+    Session.find().populate('matches').exec().then(sessions => {
         if (sessions.length === 0) {
             console.log(`No active sessions found`);
             return;

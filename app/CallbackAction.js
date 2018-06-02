@@ -13,7 +13,7 @@ class CallbackAction {
         if (typeof this.callbackData.messages === 'undefined') {
             this.callbackData.messages = [];
         }
-        if (text.length > 0 || typeof text === 'object') {
+        if (typeof text !== 'undefined' && (text.length > 0 || typeof text === 'object') ) {
             this.callbackData.messages.push(text);
         }
     }

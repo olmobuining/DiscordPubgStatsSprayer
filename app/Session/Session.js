@@ -27,25 +27,52 @@ let sessionSchema = new Schema({
             required: true,
         },
     },
-    // matches: [
-    //     {
-    //         type: Schema.Types.ObjectId,
-    //         ref: 'Match'
-    //     }
-    // ],
+    matches: [
+        {
+            type: Schema.Types.ObjectId,
+            ref: 'Match'
+        }
+    ],
 });
 
 sessionSchema.methods.getUser = function() {
     return User.findOne(this.user._id).exec();
 };
 
-sessionSchema.methods.findNewMatches = function() {
-    return new Promise(resolve => {
-        return resolve([]);
+sessionSchema.methods.hasMatch = function (matchToCheck) {
+    for (let counter = 0; counter < this.matches.length; counter ++) {
+        if (matchToCheck._id.equals(this.matches[counter]._id)) {
+            return true;
+        }
+    }
+    return false;
+};
+
+sessionSchema.methods.findNewMatches = async function(cb) {
+    const currentSession = this;
+    return this.getUser().then(user => {
+        return user.getMatches().then(async function(matches)  {
+            for (let matchNumber = 4; matchNumber >= 0; matchNumber--) {
+                if (typeof matches[matchNumber] !== "undefined" && typeof matches[matchNumber].id !== "undefined") {
+                    console.log(matches[matchNumber].id);
+                    await Match.findOneAndLoad(matches[matchNumber].id).then(async function(match) {
+                        if (match.playedAfter(currentSession.startedAt.getTime())
+                            && !currentSession.hasMatch(match)) {
+                            await match.getEmbed(user).then(embed => {
+                                cb.addMessage(embed);
+                            });
+                            currentSession.matches.push(match._id);
+                        }
+                    });
+                }
+            }
+            currentSession.save();
+            return cb;
+        });
     });
 };
 
-sessionSchema.methods.task = function() {
+sessionSchema.methods.task = async function() {
     let cb = new CallbackAction('channel');
     cb.setChannel(this.channel.id);
     let endTimestamp = this.startedAt.valueOf() + (60000*this.duration);
@@ -58,12 +85,7 @@ sessionSchema.methods.task = function() {
             return cb;
         });
     } else {
-        return this.getUser().then(user => {
-            return user.getLastMatchEmbed().then(embed => {
-                cb.addMessage(embed);
-                return cb;
-            });
-        });
+        return await this.findNewMatches(cb);
     }
 };
 
