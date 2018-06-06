@@ -3,9 +3,55 @@
 const Discord = require('discord.js');
 const client = new Discord.Client();
 const fs = require('fs');
-const IntervalChecker = require('./services/IntervalChecker.js');
-
 const prefix = process.env.BOT_PREFIX;
+const Callback = require('./Callback.js');
+const SessionTask = require('./Session/SessionTask.js');
+
+client.on('message', message => {
+    // Ignore other bots
+    if (message.author.bot) return;
+
+    // Ignore requests without our prefix
+    if (!message.content.startsWith(prefix)) {
+        return;
+    }
+
+    let command = message.content.split(' ')[0].slice(prefix.length);
+    let args = message.content.split(' ').slice(1);
+
+    // Get command
+    let cmd = getCommand(command);
+
+    // Run command
+    if (cmd) {
+        console.log(`Run command: ${cmd.name}, with arguments: ${args}`);
+        cmd.execute(client, message, args, {})
+        .then(result => {
+            const cb = new Callback(client, message);
+            console.log("Callback: ", result); // debug
+            cb.call(result);
+        })
+        .catch(error => {
+            console.log(error);
+            message.reply(error);
+        })
+        ;
+    }
+});
+
+client.on('ready', () => {
+    SessionTask(client);
+    setInterval(function () { SessionTask(client); }, (process.env.DEFAULT_INTERVAL_CHECK_TIME_MIN * 60000));
+});
+
+client.on('error', console.log);
+client.on('warn', console.log);
+client.on('guildCreate', guild => {
+    console.info(`New Discord server: ${guild.name} '${guild.id}'. This server has ${guild.memberCount} members.`);
+});
+client.on('guildDelete', guild => {
+    console.info(`Discord server: ${guild.name} '${guild.id}' has removed the bot.`);
+});
 
 client.commands = new Discord.Collection();
 client.aliases = new Discord.Collection();
@@ -24,33 +70,7 @@ fs.readdir(`./commands/`, (err, files) => {
     });
 });
 
-client.on('message', message => {
-    // Ignore other bots 
-    if (message.author.bot) return;
-
-    // Ignore requests without our prefix
-    if (!message.content.startsWith(prefix)) {
-        return;
-    }
-    let command = message.content.split(' ')[0].slice(prefix.length);
-    let args = message.content.split(' ').slice(1);
-
-    // Get command
-    let cmd = getCommand(command);
-    
-    // Run command
-    if (cmd) {
-        console.log(`Run command: ${cmd.name}, with arguments: ${args}`);
-        cmd.execute(client, message, args, {});
-    }
-});
-
-client.on('ready', () => {
-    let ic = new IntervalChecker(client, process.env.DEFAULT_INTERVAL_CHECK_TIME_MIN);
-    ic.start(client);
-    console.log(`Logged in as ${client.user.tag}!`);
-});
-
+// Get a command by name or alias
 function getCommand(command) {
     if (client.commands.has(command)) {
         return client.commands.get(command);
@@ -59,8 +79,8 @@ function getCommand(command) {
     }
 }
 
+// Enable bot
 connectDiscord();
-
 function connectDiscord() {
     client.login(process.env.DISCORD_BOT_TOKEN).catch(err => {
         console.log("Bot failed:", err.message);

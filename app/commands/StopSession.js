@@ -1,8 +1,9 @@
 'use strict';
-const Player = require('../schema/Player.js');
-const Session = require('../schema/Session.js');
+const Session = require('../Session/Session.js');
+const CallbackAction = require('../CallbackAction');
+const User = require('../User/User.js');
 
-// Adding and getting the PUBG username
+// Stop play time!
 class StopSession {
     constructor() {
         this.aliases = [
@@ -11,32 +12,25 @@ class StopSession {
             `sts`,
         ];
         this.name = `StopSession`;
-        this.errorMessages = {};
     }
 
     execute(client, message, args, options) {
-        new Player().findPlayer(message.author.id, message.author.username).then(player => {
-            Session.findOne({playerId: player.id}).exec()
-                .then(session => {
-                    if (!session) {
-                        // No active session running for this user.
-                        message.reply(`You have no active session.`);
-                    } else {
-                        // @todo send an overview of all the matches played in this session.
-                        let today = new Date();
-                        let playTime = Math.round((today.valueOf() - session.startedAt.valueOf())/60000);
-                        session.remove();
-                        message.reply(`I've stopped your session. In the future I will post an overview of all played games in this session. You have played for ${playTime} minutes!`);
-                    }
-                })
-                .catch(error => {
-                    console.log(error);
-                });
-
+        let cb = new CallbackAction('replies');
+        return User.findOneOrCreate(message.author.id, message.author.username, message.author.displayAvatarURL)
+        .then(foundUser => {
+            return Session.findOne({user: foundUser}).exec().then(session => {
+                if (!session) {
+                    cb.addReply(`You have no active session`);
+                } else {
+                    // @todo send an overview of all the matches played in this session.
+                    let today = new Date();
+                    let playTime = Math.round((today.valueOf() - session.startedAt.valueOf())/60000);
+                    session.remove();
+                    cb.addReply(`Stopping your session. You have played for ${playTime} minutes!`);
+                }
+                return cb;
+            })
         });
-    }
-
-    endSessionAction() {
 
     }
 }
