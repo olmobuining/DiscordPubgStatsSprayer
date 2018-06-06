@@ -32,6 +32,9 @@ let UserSchema = new Schema({
             type: String,
             required: false,
         },
+        shard: {
+            type: String,
+        },
     },
     createdAt: {
         type: Date,
@@ -61,10 +64,17 @@ UserSchema.methods.getPubgUsername = function () {
 
 };
 
+UserSchema.methods.getShard = function () {
+    if (typeof this.pubg === 'undefined' || !this.pubg.shard) {
+        return process.env.DEFAULT_SHARD;
+    }
+    return this.pubg.shard;
+};
+
 UserSchema.methods.getMatches = function() {
     return this.getPubgUsername().then(username => {
         console.log(`Getting matches for ${username}::${this.pubg.id}`);
-        return pubg.loadPlayerById(this.pubg.id).then((playerData, err) => {
+        return pubg.loadPlayerById(this.pubg.id, this.getShard()).then((playerData, err) => {
             if (!playerData || err) {
                 console.log(`Failed to get last match id for the player`, playerData, err);
                 throw `Failed to get data.`;
