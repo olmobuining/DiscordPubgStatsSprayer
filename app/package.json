@@ -2,7 +2,7 @@
   "dependencies": {
     "discord.js": "^11.3.2",
     "express": "^4.16.3",
-    "mongoose": "^5.0.17",
+    "mongoose": "^5.7.5",
     "pubg-api": "https://github.com/Wobow/pubg_api/tarball/develop"
   },
   "name": "pubgstatssprayer",
